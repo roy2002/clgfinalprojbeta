@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
+from matplotlib.widgets import Button
 import serial
 import json
 
@@ -10,51 +11,61 @@ foot_img = mpimg.imread('foot.png')
 fig, ax = plt.subplots()
 imgplot = ax.imshow(foot_img)
 
-# Define the positions of the circles on the foot photo for sensors
+# Define positions for sensor circles
 circle_positions = [
     (195, 250), (110, 307), (180, 305), (100, 445), (167, 606)
 ]
 
+# Define color map for sensor data
+cmap = plt.cm.inferno
+norm = plt.Normalize(0, 500)
+
+# Create sensor circles
+circles = []
+for position in circle_positions:
+    circle = plt.Circle(xy=position, radius=10, color=cmap(0.5), alpha=0.3, zorder=10)
+    ax.add_patch(circle)
+    circles.append(circle)
+
 # Establish serial connection
-ser = serial.Serial('COM5', 115200)  # Replace 'COM10' with your COM port
+ser = serial.Serial('COM5', 115200)
 
-while True:
+# Function to update circle color and size
+def update_circle(sensor_id, value):
+    if 0 <= value <= 500:
+        color = cmap(norm(value))
+        circles[sensor_id].set_color(color)
+        circles[sensor_id].set_alpha(0.8)
+    else:
+        circles[sensor_id].set_color(cmap(0.5))
+        circles[sensor_id].set_alpha(0.3)
+
+# Function to handle data received from serial port
+def handle_data(data):
     try:
-        data = ser.readline().decode().strip()
-        sensor_data = json.loads(data)  # Decode JSON data
-
-        # Plot sensor data on the foot image
+        sensor_data = json.loads(data.decode().strip())
         for sensor_id, value in sensor_data.items():
-            value = int(value)
-            sensor_number = int(sensor_id[6:]) - 1  # Extract sensor number from 'sensorX'
-            if 0 <= sensor_number < len(circle_positions):
-                x, y = circle_positions[sensor_number]  # Get circle position
-                # Assign color based on value ranges
-                if value <= 20:
-                    color = 'red'
-                    alpha = 0.5
-                elif 20 < value <= 100:
-                    color = 'orange'
-                    alpha = 0.6
-                elif 100 < value <= 200:
-                    color = 'green'
-                    alpha = 0.7
-                elif 200 < value <= 300:
-                    color = 'yellow'
-                    alpha = 0.8
-                else:
-                    color = 'blue'
-                    alpha = 0.9
-                circle = plt.Circle((x, y), radius=10, color=color, alpha=alpha)
-                ax.add_patch(circle)
-        
-        # Refresh the plot
+            update_circle(int(sensor_id), int(value))
         fig.canvas.draw()
-        plt.pause(0.1)  # Adjust the pause duration as needed
-
-        # Clear the previous circles for the next data update
-        ax.clear()
-        imgplot = ax.imshow(foot_img)
-
     except Exception as e:
         print("Error:", e)
+
+# Button to clear circles and reset plot
+reset_button = Button(ax.transAxes, "Reset", (0.9, 0.1), color='lightgray', hovercolor='gray')
+
+def reset_plot(event):
+    for circle in circles:
+        circle.set_color(cmap(0.5))
+        circle.set_alpha(0.3)
+    fig.canvas.draw()
+
+reset_button.on_clicked(reset_plot)
+
+# Read data from serial port continuously
+while True:
+    data = ser.readline()
+    if data:
+        handle_data(data)
+
+# Display the plot
+plt.show()
