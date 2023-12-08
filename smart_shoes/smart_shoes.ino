@@ -1,70 +1,52 @@
 #include <BluetoothSerial.h>
+#include <ArduinoJson.h>
 
-// Define the number of input channels
-const int numChannels = 16;
-
-// Array to store the ADC values for each channel
-int adcValues[numChannels];
-
-// Current channel being read
-int currentChannel = 0;
-
-// BluetoothSerial object
 BluetoothSerial SerialBT;
 
+const int numSensors = 5;
+int sensorData[numSensors];
+
 void setup() {
-  // Initialize Serial Monitor for debugging
   Serial.begin(115200);
+  SerialBT.begin("ESP32-Bluetooth");
 
-  // Initialize the ADC
-  adcSetup();
-
-  // Initialize Bluetooth
-  SerialBT.begin("ESP32-Bluetooth"); // Change the name to your preference
-  Serial.println("Bluetooth started. You can now connect to ESP32.");
+  pinMode(13, INPUT);
+  pinMode(12, INPUT);
+  pinMode(14, INPUT);
+  pinMode(27, INPUT);
+  pinMode(26, INPUT);
 }
 
 void loop() {
-  // Read analog value from the current channel
-  adcValues[currentChannel] = analogReadMilliVolts(currentChannel);
+  // Read sensor data
+  sensorData[0] = analogRead(26);
+  sensorData[1] = analogRead(27);
+  sensorData[2] = analogRead(14);
+  sensorData[3] = analogRead(12);
+  sensorData[4] = analogRead(13);
+  
+  // Send sensor data over Bluetooth
+  sendBluetoothData();
 
-  // Move to the next channel
-  currentChannel++;
-
-  // If all channels have been read, send the data through Bluetooth and reset the current channel
-  if (currentChannel >= numChannels) {
-    currentChannel = 0;
-    sendBluetoothData();
-  }
-
-  // Delay between readings (you can also use timer-based methods for more precise timing)
-  delay(10); // Adjust as needed
-}
-
-void adcSetup() {
-  // Set the ADC resolution to 12 bits (0-4095)
-  analogReadResolution(12);
-
-  // No need to set ADC clock frequency for ESP32, it's fixed at 1.1 MHz
-
-  // Set the attenuation to 11dB (ADC range 0-3.3V)
+  delay(1000); // Adjust delay as needed
 }
 
 void sendBluetoothData() {
-  // Prepare a string to hold the data
-  String dataString = "";
+  StaticJsonDocument<128> doc; // Adjust size based on your data
 
-  // Concatenate all the ADC values to the data string
-  for (int channel = 0; channel < numChannels; channel++) {
-    dataString += String(adcValues[channel]) + ",";
+  // Add sensor data to the JSON object
+  for (int sensor = 0; sensor < numSensors; sensor++) {
+    doc["sensor" + String(sensor + 1)] = sensorData[sensor];
   }
 
-  // Remove the trailing comma
-  dataString.trim();
+  // Serialize JSON to a string
+  String jsonString;
+  serializeJson(doc, jsonString);
 
-  // Send the data over Bluetooth
-  SerialBT.println(dataString);
+  // Send JSON data over Bluetooth
+  if (SerialBT.connected()) {
+    SerialBT.println(jsonString);
+  }
 
-  // Print the data to Serial Monitor for debugging
-  Serial.println(dataString);
+  Serial.println(jsonString);
 }
