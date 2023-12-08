@@ -20,8 +20,8 @@ void setup() {
 void loop() {
   // Read sensor data
   sensorData[0] = analogRead(26);
-  sensorData[1] = analogRead(27);
-  sensorData[2] = analogRead(14);
+  sensorData[1] = analogRead(14);
+  sensorData[2] = analogRead(27);
   sensorData[3] = analogRead(12);
   sensorData[4] = analogRead(13);
   
