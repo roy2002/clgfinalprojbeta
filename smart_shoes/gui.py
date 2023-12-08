@@ -1,18 +1,10 @@
-import serial
-import tkinter as tk
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
-import numpy as np
+import serial
 import json
 
-# Define threshold values for color mapping
-red_threshold = 10
-orange_threshold = 20
-blue_threshold = 30
-
 # Load foot picture
-foot_img = mpimg.imread(r'foot.png')
+foot_img = mpimg.imread('foot.png')
 
 # Create a subplot
 fig, ax = plt.subplots()
@@ -23,66 +15,35 @@ circle_positions = [
     (195, 250), (110, 307), (180, 305), (100, 445), (167, 606)
 ]
 
-# Create custom colormaps
-red_cmap = plt.cm.Reds
-orange_cmap = plt.cm.Oranges
-blue_cmap = plt.cm.Blues
+# Establish serial connection
+ser = serial.Serial('COM5', 115200)  # Replace 'COM5' with your COM port
 
-def value_to_color_and_size(value):
-    # Map data value to color and size
-    if value < red_threshold:
-        cmap = red_cmap
-        size = 100
-    elif value < orange_threshold:
-        cmap = orange_cmap
-        size = 200
-    else:
-        cmap = blue_cmap
-        size = 300
-    return cmap(value / blue_threshold), size
+def plot_circle(x, y, value):
+    colormap = plt.cm.hot  # Adjust colormap as needed
+    normalized_value = min(value, 400) / 400.0  # Normalize value between 0 and 1
+    circle = plt.Circle((x, y), radius=10, color=colormap(normalized_value), alpha=0.7)
+    ax.add_patch(circle)
 
-# Create a heatmap object
-heatmap = ax.scatter(np.array([]), np.array([]), c=[], s=100, alpha=0.3)
-
-# Open a serial connection
-ser = serial.Serial('COM10', 9600)
-
-def update_heatmap():
+while True:
     try:
         data = ser.readline().decode().strip()
         sensor_data = json.loads(data)  # Decode JSON data
 
-        # Process each sensor data entry
+        # Plot sensor data on the foot image
         for sensor_id, value in sensor_data.items():
             value = int(value)
-            # Map data to color and size
-            color, size = value_to_color_and_size(value)
-
-            # Update heatmap for the corresponding sensor position
             sensor_number = int(sensor_id[6:]) - 1  # Extract sensor number from 'sensorX'
             if 0 <= sensor_number < len(circle_positions):
-                heatmap.set_offsets([circle_positions[sensor_number]])
-                heatmap.set_array([color])
-                heatmap.set_sizes([size])
-                fig.canvas.draw()
+                x, y = circle_positions[sensor_number]  # Get circle position
+                plot_circle(x, y, value)
 
-    except (ValueError, KeyError) as e:
-        print("Error decoding JSON:", e)
+        # Refresh the plot
+        fig.canvas.draw()
+        plt.pause(0.1)  # Adjust the pause duration as needed
 
-    # Schedule the update after a delay
-    root.after(100, update_heatmap)  # Adjust the delay (in milliseconds) as needed
+        # Clear the previous circles for the next data update
+        ax.clear()
+        imgplot = ax.imshow(foot_img)
 
-def plot_on_tkinter():
-    global root
-    root = tk.Tk()
-    root.title("Heatmap GUI")
-
-    canvas = FigureCanvasTkAgg(fig, master=root)
-    canvas.get_tk_widget().pack()
-
-    # Start updating the heatmap
-    update_heatmap()
-
-    root.mainloop()
-
-plot_on_tkinter()
+    except Exception as e:
+        print("Error:", e)
