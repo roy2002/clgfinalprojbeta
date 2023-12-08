@@ -1,0 +1,73 @@
+#include <BluetoothSerial.h>
+#include <ArduinoJson.h>
+
+BluetoothSerial SerialBT;
+
+const int numSensors = 5;
+int sensorData[numSensors];
+
+// PID constants
+const float Kp = 0.8; // Proportional constant
+const float Ki = 0.04; // Integral constant
+const float Kd = 0.09; // Derivative constant
+const int targetValue = 250; // Target value for sensors
+
+void setup() {
+  Serial.begin(115200);
+  SerialBT.begin("ESP32-Bluetooth");
+
+  pinMode(13, INPUT);
+  pinMode(12, INPUT);
+  pinMode(14, INPUT);
+  pinMode(27, INPUT);
+  pinMode(26, INPUT);
+}
+
+void loop() {
+  // Read sensor data
+  sensorData[0] = applyPID(analogRead(26));
+  sensorData[1] = applyPID(analogRead(14));
+  sensorData[2] = applyPID(analogRead(27));
+  sensorData[3] = applyPID(analogRead(12));
+  sensorData[4] = applyPID(analogRead(13));
+  
+  // Send sensor data over Bluetooth
+  sendBluetoothData();
+
+  delay(500); // Adjust delay as needed
+}
+
+// Apply PID to sensor data for sensitivity adjustment
+int applyPID(int sensorValue) {
+  static float previousError = 0;
+  static float integral = 0;
+
+  float error = targetValue - sensorValue;
+  integral = integral + error;
+  float derivative = error - previousError;
+
+  float output = (Kp * error) + (Ki * integral) + (Kd * derivative);
+  previousError = error;
+
+  return output;
+}
+
+void sendBluetoothData() {
+  StaticJsonDocument<128> doc; // Adjust size based on your data
+
+  // Add sensor data to the JSON object
+  for (int sensor = 0; sensor < numSensors; sensor++) {
+    doc["sensor" + String(sensor + 1)] = sensorData[sensor];
+  }
+
+  // Serialize JSON to a string
+  String jsonString;
+  serializeJson(doc, jsonString);
+
+  // Send JSON data over Bluetooth
+  if (SerialBT.connected()) {
+    SerialBT.println(jsonString);
+  }
+
+  Serial.println(jsonString);
+}
