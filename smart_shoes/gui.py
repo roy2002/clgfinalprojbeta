@@ -16,7 +16,7 @@ circle_positions = [
 ]
 
 # Establish serial connection
-ser = serial.Serial('COM5', 115200)  # Replace 'COM5' with your COM port
+ser = serial.Serial('COM8', 115200)  # Replace 'COM5' with your COM port
 
 def plot_circle(x, y, value):
     colormap = plt.cm.hot  # Adjust colormap as needed
