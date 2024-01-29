@@ -16,7 +16,7 @@ circle_positions = [
 ]
 
 # Establish serial connection
-ser = serial.Serial('COM5', 115200)  # Replace 'COM5' with your COM port
+ser = serial.Serial('COM8', 115200)  # Replace 'COM5' with your COM port
 
 def get_color(value):
     # Map sensor value to color range

@@ -8,7 +8,7 @@ int sensorData[numSensors];
 
 void setup() {
   Serial.begin(115200);
-  SerialBT.begin("ESP32-Bluetooth");
+  SerialBT.begin("RightFootinsole");
 
   pinMode(33, INPUT);
   pinMode(32, INPUT);
