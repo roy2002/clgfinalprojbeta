@@ -3,27 +3,29 @@
 
 BluetoothSerial SerialBT;
 
-const int numSensors = 5;
+const int numSensors = 5; // Update the number of sensors to match the pins
 int sensorData[numSensors];
 
 void setup() {
   Serial.begin(115200);
-  SerialBT.begin("ESP32-Bluetooth");
+  SerialBT.begin("RightFootinsole");
 
-  pinMode(13, INPUT);
-  pinMode(12, INPUT);
-  pinMode(14, INPUT);
-  pinMode(27, INPUT);
-  pinMode(26, INPUT);
+  pinMode(33, INPUT);
+  pinMode(32, INPUT);
+  pinMode(34, INPUT);
+  pinMode(36, INPUT);
+  pinMode(35, INPUT);
+ 
 }
 
 void loop() {
   // Read sensor data
-  sensorData[0] = analogRead(26);
-  sensorData[1] = analogRead(14);
-  sensorData[2] = analogRead(27);
-  sensorData[3] = analogRead(12);
-  sensorData[4] = analogRead(13);
+  sensorData[0] = analogRead(36);
+  sensorData[1] = analogRead(35);
+  sensorData[2] = analogRead(34);
+  sensorData[3] = analogRead(32);
+  sensorData[4] = analogRead(33);
+ 
   
   // Send sensor data over Bluetooth
   sendBluetoothData();
@@ -32,7 +34,7 @@ void loop() {
 }
 
 void sendBluetoothData() {
-  StaticJsonDocument<128> doc; // Adjust size based on your data
+  StaticJsonDocument<256> doc; // Adjust size based on your data
 
   // Add sensor data to the JSON object
   for (int sensor = 0; sensor < numSensors; sensor++) {
