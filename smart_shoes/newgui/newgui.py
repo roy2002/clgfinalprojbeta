@@ -5,7 +5,6 @@ import json
 from datetime import datetime
 import pandas as pd
 import time
-import os
 
 def read_serial_data(ser, sensor_name):
     try:
@@ -40,7 +39,7 @@ ser1, ser2 = serial.Serial(selected_tab1, 115200), serial.Serial(selected_tab2, 
 
 # Create DataFrames to store sensor data
 csv_file1, csv_file2 = f'sensor_data_{sensor_name1}.csv', f'sensor_data_{sensor_name2}.csv'
-csv_header = ['Timestamp', f'{sensor_name1}_Values', f'{sensor_name2}_Values']
+csv_header = ['Timestamp', f'{sensor_name1}_Values', f'{sensor_name1}_Labels', f'{sensor_name2}_Values', f'{sensor_name2}_Labels']
 df1, df2 = pd.DataFrame(columns=csv_header), pd.DataFrame(columns=csv_header)
 
 # Arrange components in three columns
@@ -61,12 +60,13 @@ while recording and (time.time() - start_time) <= record_time_minutes * 60:
         timestamp1 = datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]
         new_data = {
             'Timestamp': timestamp1,
-            f'{sensor_name1}_Values': sensor_values1
+            f'{sensor_name1}_Values': sensor_values1,
+            f'{sensor_name1}_Labels': sensor_labels1
         }
         df1 = pd.concat([df1, pd.DataFrame([new_data])], ignore_index=True)
 
         # Display the latest data in the app
-        message_box1.table(df1.tail(1)[df1.columns.intersection([f'Timestamp', f'{sensor_name1}_Values'])])
+        message_box1.table(df1.tail(1)[df1.columns.intersection(['Timestamp', f'{sensor_name1}_Values', f'{sensor_name1}_Labels'])])
 
     # Read data from the second serial input
     sensor_labels2, sensor_values2 = read_serial_data(ser2, sensor_name2)
@@ -74,24 +74,13 @@ while recording and (time.time() - start_time) <= record_time_minutes * 60:
         timestamp2 = datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]
         new_data = {
             'Timestamp': timestamp2,
-            f'{sensor_name2}_Values': sensor_values2
+            f'{sensor_name2}_Values': sensor_values2,
+            f'{sensor_name2}_Labels': sensor_labels2
         }
         df2 = pd.concat([df2, pd.DataFrame([new_data])], ignore_index=True)
 
         # Display the latest data in the app
-        message_box2.table(df2.tail(1)[df2.columns.intersection([f'Timestamp', f'{sensor_name2}_Values'])])
-
-# Delete button for Sensor 1 data
-delete_csv1 = col3.button(f"Delete {sensor_name1}'s CSV")
-if delete_csv1:
-    os.remove(csv_file1)
-    st.write(f"{csv_file1} deleted.")
-
-# Delete button for Sensor 2 data
-delete_csv2 = col3.button(f"Delete {sensor_name2}'s CSV")
-if delete_csv2:
-    os.remove(csv_file2)
-    st.write(f"{csv_file2} deleted.")
+        message_box2.table(df2.tail(1)[df2.columns.intersection(['Timestamp', f'{sensor_name2}_Values', f'{sensor_name2}_Labels'])])
 
 st.write("Recording complete.")
 
@@ -104,11 +93,3 @@ df1.to_csv(csv_file1, index=False)
 df2.to_csv(csv_file2, index=False)
 st.write(f"Data saved to {csv_file1}")
 st.write(f"Data saved to {csv_file2}")
-
-# Merge the two DataFrames
-merged_df = pd.merge(df1, df2, on='Timestamp', how='outer')
-
-# Save the merged data to a CSV file
-merged_csv_file = f'merged_sensor_data.csv'
-merged_df.to_csv(merged_csv_file, index=False)
-st.write(f"Merged data saved to {merged_csv_file}")
