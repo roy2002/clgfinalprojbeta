@@ -32,7 +32,6 @@ void loop() {
 
   delay(1000); // Adjust delay as needed
 }
-
 void sendBluetoothData() {
   StaticJsonDocument<256> doc; // Adjust size based on your data
 
@@ -45,9 +44,12 @@ void sendBluetoothData() {
   String jsonString;
   serializeJson(doc, jsonString);
 
-  // Send JSON data over Bluetooth
+  // Send JSON data over Bluetooth with explicit encoding
   if (SerialBT.connected()) {
-    SerialBT.println(jsonString);
+    const uint8_t* jsonData = reinterpret_cast<const uint8_t*>(jsonString.c_str());
+    size_t dataSize = jsonString.length();
+    SerialBT.write(jsonData, dataSize);
+    SerialBT.write('\n');  // Add newline for better parsing on the receiving end
   }
 
   Serial.println(jsonString);
