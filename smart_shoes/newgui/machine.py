@@ -100,7 +100,7 @@ model = tf.keras.Sequential([
 model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
 
 # Train the Neural Network
-model.fit(X_train, y_train, epochs=10, batch_size=32, validation_split=0.2)
+model.fit(X_train, y_train, epochs=500, batch_size=32, validation_split=0.2)
 
 # Save the model as a .tftmodel file
 model.save('live_trained_model.tftmodel')
