@@ -8,7 +8,7 @@ int sensorData[numSensors];
 
 void setup() {
   Serial.begin(115200);
-  SerialBT.begin("RightFootinsole");
+  SerialBT.begin("LeftFootinsole");
 
   pinMode(33, INPUT);
   pinMode(32, INPUT);
@@ -45,9 +45,12 @@ void sendBluetoothData() {
   String jsonString;
   serializeJson(doc, jsonString);
 
-  // Send JSON data over Bluetooth
+  // Send JSON data over Bluetooth with explicit encoding
   if (SerialBT.connected()) {
-    SerialBT.println(jsonString);
+    const uint8_t* jsonData = reinterpret_cast<const uint8_t*>(jsonString.c_str());
+    size_t dataSize = jsonString.length();
+    SerialBT.write(jsonData, dataSize);
+    SerialBT.write('\n');  // Add newline for better parsing on the receiving end
   }
 
   Serial.println(jsonString);
