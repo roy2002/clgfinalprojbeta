@@ -7,7 +7,7 @@ import cv2
 
 foot_img = mpimg.imread('foot.png')
 # Replace 'your_data.csv' with the path to your CSV file
-csv_file = 'Jeet_attempt1.csv'
+csv_file = 'Pritwish_attemp1.csv'
 
 # Specify the column names for left and right sensors
 left_sensor_names = ['Sensor1-L', 'Sensor2-L', 'Sensor3-L', 'Sensor4-L', 'Sensor5-L']
@@ -25,14 +25,14 @@ right_column_data = {col: df[col].tolist() for col in right_sensor_names}
 
 # Circle positions
 circle_positions = [
-    (195, 250), (110, 307), (180, 305), (100, 445), (167, 606)
+    (167, 606), (111, 316), (97,450), (180, 305), (194, 255)
 ]
 
-circle_positions2 = [(349, 600), (334, 422), (385, 294), (319, 299),(309, 244)]
+circle_positions2 = [(307, 244), (334, 422), (325, 300), (388, 299),(350, 601)]
 
 
 # Set up video parameters
-video_filename = 'points_video.gif'
+video_filename = 'pritwish_video.gif'
 fps = 2
 
 # Plotting the foot image

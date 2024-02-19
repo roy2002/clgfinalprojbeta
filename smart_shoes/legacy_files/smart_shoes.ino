@@ -45,12 +45,9 @@ void sendBluetoothData() {
   String jsonString;
   serializeJson(doc, jsonString);
 
-  // Send JSON data over Bluetooth with explicit encoding
+  // Send JSON data over Bluetooth
   if (SerialBT.connected()) {
-    const uint8_t* jsonData = reinterpret_cast<const uint8_t*>(jsonString.c_str());
-    size_t dataSize = jsonString.length();
-    SerialBT.write(jsonData, dataSize);
-    SerialBT.write('\n');  // Add newline for better parsing on the receiving end
+    SerialBT.println(jsonString);
   }
 
   Serial.println(jsonString);

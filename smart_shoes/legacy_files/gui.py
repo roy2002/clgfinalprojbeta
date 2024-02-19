@@ -12,7 +12,7 @@ imgplot = ax.imshow(foot_img)
 
 # Define the positions of the circles on the foot photo for sensors
 circle_positions = [
-    (195, 250), (110, 307), (180, 305), (100, 445), (167, 606)
+    (167, 606), (111, 316), (97,450), (180, 305), (194, 255)
 ]
 
 # Establish serial connection
