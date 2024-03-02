@@ -39,7 +39,7 @@ import json
 import csv
 from datetime import datetime
 
-csv_file = 'prc_Attempt4.csv'
+csv_file = 'abirbhab_22nd Feb 2024_attempt1.csv'
 
 # Replace 'COM8' and 'COM12' with your respective COM ports
 ser1 = serial.Serial('COM15', 115200)
@@ -63,7 +63,7 @@ with open(csv_file, mode='w', newline='') as file:
             sensor_values1 = list(sensor_data1.values())
 
             for i in range(0, len(sensor_values1)):
-                sensor_values1[i] = sensor_values1[i] * 0.00244
+                sensor_values1[i] = (4095 - sensor_values1[i]) * 0.00244
 
             # Read data from the second serial input
             data2 = ser2.readline().decode().strip()
@@ -74,7 +74,7 @@ with open(csv_file, mode='w', newline='') as file:
             sensor_values2 = list(sensor_data2.values())
 
             for i in range(0, len(sensor_values2)):
-                sensor_values2[i] = sensor_values2[i] * 0.00244
+                sensor_values2[i] = (4095 - sensor_values2[i]) * 0.00244
 
             # Get the current timestamp
             timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]  # Format as YYYY-MM-DD HH:MM:SS.mmm
