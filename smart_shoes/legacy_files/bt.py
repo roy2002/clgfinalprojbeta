@@ -39,7 +39,7 @@ import json
 import csv
 from datetime import datetime
 
-csv_file = 'abirbhab_22nd Feb 2024_attempt1.csv'
+csv_file = 'aniket_04 March 2024_attempt1.csv'
 
 # Replace 'COM8' and 'COM12' with your respective COM ports
 ser1 = serial.Serial('COM15', 115200)

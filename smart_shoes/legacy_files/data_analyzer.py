@@ -40,7 +40,7 @@ fig, ax = plt.subplots()
 ax.imshow(foot_img)
 
 # Define a custom colormap using RdYlGn
-cmap = cm.get_cmap('RdYlGn_r')
+cmap = cm.get_cmap('RdYlGn')
 
 
 # Update function for animation
